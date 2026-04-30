@@ -4,11 +4,22 @@ Tap your MacBook, trigger actions. 拍拍你的 Mac，触发快捷操作。
 
 一个 macOS 菜单栏应用，通过 Apple Silicon 加速度计检测物理拍击，触发系统操作。
 
-## MVP 功能
+## 功能
 
-**拍一下 → 切换麦克风静音**
+- **连击检测** — 单击、双击、三击触发不同操作
+- **6 种动作** — 麦克风静音、播放/暂停、截图、锁屏、勿扰模式、无操作
+- **自定义映射** — 每种手势可自由绑定动作，设置自动保存
+- **灵敏度调节** — 手动滑块 + 自动校准（采集环境噪声自动设定阈值）
+- **音效反馈** — 拍击时播放系统音效
+- **开机自启** — 一键配置 launchd 服务
 
-开视频会议时，拍一下 MacBook 比找静音按钮快 10 倍。
+## 默认手势
+
+| 手势 | 默认动作 |
+|------|---------|
+| 拍一下 | 切换麦克风静音 |
+| 拍两下 | 播放/暂停 |
+| 拍三下 | 截图 |
 
 ## 要求
 
@@ -19,19 +30,17 @@ Tap your MacBook, trigger actions. 拍拍你的 Mac，触发快捷操作。
 ## 构建 & 运行
 
 ```bash
-# 构建
 swift build
-
-# 运行（需要 sudo）
 sudo .build/debug/TapDeck
 ```
 
 ## 技术栈
 
 - Swift 5.9 + SwiftUI
-- IOKit HID — 读取 Apple SPU 加速度计（Bosch BMI286 IMU）
-- CoreAudio — 系统麦克风静音控制
+- IOKit HID — Apple SPU 加速度计（Bosch BMI286 IMU）
+- CoreAudio — 麦克风静音控制
 - STA/LTA 算法 — 拍击检测
+- UserDefaults — 设置持久化
 
 ## 项目结构
 
@@ -39,19 +48,13 @@ sudo .build/debug/TapDeck
 Sources/
 ├── TapDeckApp.swift      # 入口 + MenuBarExtra
 ├── MenuBarView.swift     # 菜单栏 UI
-├── TapEngine.swift       # 加速度计读取 + 拍击检测
-└── MicController.swift   # 麦克风静音控制（CoreAudio）
+├── TapEngine.swift       # 加速度计 + 拍击检测 + 连击识别
+├── TapAction.swift       # 动作定义 + 执行（6 种系统操作）
+├── MicController.swift   # 麦克风静音控制（CoreAudio）
+├── Settings.swift        # 设置持久化（UserDefaults）
+├── LaunchAtLogin.swift   # 开机自启（launchd）
+└── SoundFeedback.swift   # 音效反馈
 ```
-
-## 路线图
-
-- [x] MVP: 拍击 → 麦克风静音切换
-- [ ] 连击检测（拍两下、拍三下触发不同操作）
-- [ ] 自定义动作映射（静音、播放/暂停、截图、锁屏等）
-- [ ] 灵敏度自动校准
-- [ ] 开机自启（launchd）
-- [ ] 音效反馈
-- [ ] Mac App Store 上架
 
 ## 致谢
 
