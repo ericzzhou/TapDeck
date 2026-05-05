@@ -2,6 +2,12 @@ import SwiftUI
 
 struct MenuBarView: View {
     @ObservedObject var engine: TapEngine
+    @State private var selectedTab: Int
+
+    init(engine: TapEngine) {
+        self._engine = ObservedObject(wrappedValue: engine)
+        self._selectedTab = State(initialValue: engine.settings.funModeEnabled ? 0 : 1)
+    }
 
     var body: some View {
         VStack(spacing: 10) {
@@ -10,8 +16,21 @@ struct MenuBarView: View {
 
             Divider()
 
-            // 动作映射
-            actionMappingSection
+            // 选项卡：娱乐模式 / 手势映射
+            Picker("", selection: $selectedTab) {
+                Text("🎵 娱乐").tag(0)
+                Text("⚡ 手势").tag(1)
+            }
+            .pickerStyle(.segmented)
+            .onChange(of: selectedTab) { _, newValue in
+                engine.settings.funModeEnabled = (newValue == 0)
+            }
+
+            if selectedTab == 0 {
+                funModeSection
+            } else {
+                actionMappingSection
+            }
 
             Divider()
 
@@ -140,6 +159,31 @@ struct MenuBarView: View {
                     .font(.caption)
             }
             .toggleStyle(.checkbox)
+        }
+    }
+
+    // MARK: - 娱乐模式
+
+    private var funModeSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("拍击时播放音效")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            HStack {
+                Picker("音效", selection: $engine.settings.funSound) {
+                    ForEach(FunSound.allCases) { sound in
+                        Text(sound.rawValue).tag(sound)
+                    }
+                }
+                .labelsHidden()
+
+                Button("试听") {
+                    engine.settings.funSound.play()
+                }
+                .font(.caption2)
+                .buttonStyle(.borderless)
+            }
         }
     }
 

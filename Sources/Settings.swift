@@ -27,6 +27,16 @@ class Settings: ObservableObject {
         didSet { defaults.set(soundEnabled, forKey: "soundEnabled") }
     }
 
+    /// 娱乐模式
+    @Published var funModeEnabled: Bool {
+        didSet { defaults.set(funModeEnabled, forKey: "funModeEnabled") }
+    }
+
+    /// 娱乐模式音效
+    @Published var funSound: FunSound {
+        didSet { defaults.set(funSound.rawValue, forKey: "funSound") }
+    }
+
     /// 开机自启
     @Published var launchAtLogin: Bool {
         didSet {
@@ -41,6 +51,8 @@ class Settings: ObservableObject {
         self.tripleTapAction = TapAction(rawValue: defaults.string(forKey: "tripleTapAction") ?? "") ?? .screenshot
         self.sensitivity = defaults.object(forKey: "sensitivity") as? Double ?? 0.05
         self.soundEnabled = defaults.object(forKey: "soundEnabled") as? Bool ?? true
+        self.funModeEnabled = defaults.object(forKey: "funModeEnabled") as? Bool ?? true
+        self.funSound = FunSound(rawValue: defaults.string(forKey: "funSound") ?? "") ?? .pop
         self.launchAtLogin = defaults.object(forKey: "launchAtLogin") as? Bool ?? false
     }
 }

@@ -238,10 +238,15 @@ class TapEngine: ObservableObject {
             SoundFeedback.play()
         }
 
-        action.execute()
+        // 娱乐模式与手势映射互斥
+        if settings.funModeEnabled {
+            settings.funSound.play()
+        } else {
+            action.execute()
 
-        if action == .toggleMic {
-            isMicMuted = MicController.isMuted()
+            if action == .toggleMic {
+                isMicMuted = MicController.isMuted()
+            }
         }
     }
 }
