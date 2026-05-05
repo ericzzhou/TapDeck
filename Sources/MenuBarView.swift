@@ -43,6 +43,33 @@ struct MenuBarView: View {
                     .foregroundColor(.secondary)
             }
 
+            // 实时振幅指示器
+            if engine.isListening {
+                AmplitudeBar(amplitude: engine.currentAmplitude, threshold: engine.sensitivity, lastTapTime: engine.lastTapTime)
+            }
+
+            // 错误提示
+            if let error = engine.errorMessage {
+                VStack(spacing: 4) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        Text(error)
+                            .font(.caption2)
+                            .foregroundColor(.orange)
+                            .lineLimit(2)
+                    }
+                    if engine.needsPrivilege {
+                        Button("以管理员权限启动") {
+                            engine.startWithPrivilege()
+                        }
+                        .font(.caption)
+                        .buttonStyle(.borderedProminent)
+                        .tint(.orange)
+                    }
+                }
+            }
+
             // 麦克风状态
             HStack {
                 Image(systemName: engine.isMicMuted ? "mic.slash.fill" : "mic.fill")
@@ -93,7 +120,10 @@ struct MenuBarView: View {
                         .buttonStyle(.borderless)
                     }
                 }
-                Slider(value: $engine.sensitivity, in: 0.01...0.5)
+                Slider(value: Binding(
+                    get: { engine.sensitivity },
+                    set: { engine.sensitivity = $0 }
+                ), in: 0.01...0.5)
                 HStack {
                     Text("高").font(.caption2).foregroundColor(.secondary)
                     Spacer()
@@ -153,6 +183,52 @@ struct ActionRow: View {
             }
             .labelsHidden()
             .frame(width: 140)
+        }
+    }
+}
+
+// MARK: - 振幅指示器
+
+struct AmplitudeBar: View {
+    let amplitude: Double
+    let threshold: Double
+    let lastTapTime: Date
+
+    private var level: Double {
+        min(1.0, amplitude / max(threshold * 2, 0.01))
+    }
+
+    private var detected: Bool {
+        Date().timeIntervalSince(lastTapTime) < 0.5
+    }
+
+    var body: some View {
+        VStack(spacing: 2) {
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    // 背景
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(Color.gray.opacity(0.2))
+                    // 振幅条
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(detected ? Color.orange : Color.green)
+                        .frame(width: geo.size.width * level)
+                        .animation(.easeOut(duration: 0.05), value: level)
+                    // 阈值线
+                    Rectangle()
+                        .fill(Color.red.opacity(0.6))
+                        .frame(width: 1)
+                        .offset(x: geo.size.width * min(1.0, threshold / max(threshold * 2, 0.01)))
+                }
+            }
+            .frame(height: 6)
+
+            HStack {
+                Text(detected ? "✓ 检测到拍击" : "等待拍击...")
+                    .font(.caption2)
+                    .foregroundColor(detected ? .orange : .secondary)
+                Spacer()
+            }
         }
     }
 }

@@ -25,13 +25,28 @@ Tap your MacBook, trigger actions. 拍拍你的 Mac，触发快捷操作。
 
 - macOS 14+ (Sonoma)
 - Apple Silicon (M2+)
-- 需要 sudo 运行（IOKit HID 加速度计访问权限）
+- 启动时需要管理员密码（IOKit HID 加速度计访问权限）
 
 ## 构建 & 运行
 
 ```bash
+# 开发构建
 swift build
 sudo .build/debug/TapDeck
+
+# 打包 .app
+chmod +x build-app.sh
+./build-app.sh
+
+# 安装
+cp -r .build/TapDeck.app /Applications/
+open /Applications/TapDeck.app
+```
+
+## 测试
+
+```bash
+swift test
 ```
 
 ## 技术栈
@@ -46,14 +61,43 @@ sudo .build/debug/TapDeck
 
 ```
 Sources/
-├── TapDeckApp.swift      # 入口 + MenuBarExtra
-├── MenuBarView.swift     # 菜单栏 UI
-├── TapEngine.swift       # 加速度计 + 拍击检测 + 连击识别
+├── main.swift            # 入口：NSApplication 启动
+├── AppDelegate.swift     # 菜单栏 StatusItem + Popover 管理
+├── MenuBarView.swift     # 菜单栏 UI（SwiftUI）
+├── TapEngine.swift       # 加速度计读取 + 拍击检测 + 连击识别
 ├── TapAction.swift       # 动作定义 + 执行（6 种系统操作）
 ├── MicController.swift   # 麦克风静音控制（CoreAudio）
 ├── Settings.swift        # 设置持久化（UserDefaults）
 ├── LaunchAtLogin.swift   # 开机自启（launchd）
-└── SoundFeedback.swift   # 音效反馈
+├── SoundFeedback.swift   # 音效反馈
+├── PrivilegeElevation.swift  # 权限提升工具
+└── AccelReader/
+    └── main.swift        # Root helper：IOKit HID 加速度计数据读取
+
+Tests/
+└── TapDetectorTests.swift  # STA/LTA 拍击检测算法测试
+
+Resources/
+└── Info.plist            # App bundle 配置
+```
+
+## 架构
+
+```
+TapDeck (主进程，菜单栏应用)
+  │
+  ├── AppDelegate → NSPopover → MenuBarView (SwiftUI UI)
+  │
+  ├── TapEngine (核心引擎)
+  │     ├── 启动 AccelReader helper (root 权限)
+  │     ├── 读取 stdout pipe → 幅值数据
+  │     ├── TapDetector (STA/LTA 算法) → 拍击判定
+  │     └── 连击识别 → TapAction.execute()
+  │
+  └── Settings (UserDefaults 持久化)
+
+AccelReader (独立 helper 进程，以 root 运行)
+  └── IOKit HID → 加速度计采样 → stdout 输出幅值
 ```
 
 ## 致谢

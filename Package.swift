@@ -7,7 +7,16 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "TapDeck",
-            path: "Sources"
+            path: "Sources",
+            exclude: ["AccelReader"]
+        ),
+        .executableTarget(
+            name: "AccelReader",
+            path: "Sources/AccelReader"
+        ),
+        .testTarget(
+            name: "TapDeckTests",
+            path: "Tests"
         ),
     ]
 )
