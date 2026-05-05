@@ -37,11 +37,21 @@ class TapEngine: ObservableObject {
     private var calibrationSamples: [Double] = []
     private let calibrationCount = 200
 
+    // 娱乐模式播放器
+    private(set) var soundPackPlayer: SoundPackPlayer
+
     init() {
+        soundPackPlayer = SoundPackPlayer(pack: Settings.shared.funSoundPack)
         isMicMuted = MicController.isMuted()
         settingsSink = settings.objectWillChange.sink { [weak self] _ in
             self?.objectWillChange.send()
         }
+    }
+
+    /// 切换音效包
+    func switchSoundPack(_ pack: SoundPack) {
+        soundPackPlayer.switchPack(pack)
+        settings.funSoundPack = pack
     }
 
     func toggle() {
@@ -240,7 +250,7 @@ class TapEngine: ObservableObject {
 
         // 娱乐模式与手势映射互斥
         if settings.funModeEnabled {
-            settings.funSound.play()
+            soundPackPlayer.play()
         } else {
             action.execute()
 

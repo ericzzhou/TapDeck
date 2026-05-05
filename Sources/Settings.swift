@@ -33,8 +33,8 @@ class Settings: ObservableObject {
     }
 
     /// 娱乐模式音效
-    @Published var funSound: FunSound {
-        didSet { defaults.set(funSound.rawValue, forKey: "funSound") }
+    @Published var funSoundPack: SoundPack {
+        didSet { defaults.set(funSoundPack.rawValue, forKey: "funSoundPack") }
     }
 
     /// 开机自启
@@ -52,7 +52,7 @@ class Settings: ObservableObject {
         self.sensitivity = defaults.object(forKey: "sensitivity") as? Double ?? 0.05
         self.soundEnabled = defaults.object(forKey: "soundEnabled") as? Bool ?? true
         self.funModeEnabled = defaults.object(forKey: "funModeEnabled") as? Bool ?? true
-        self.funSound = FunSound(rawValue: defaults.string(forKey: "funSound") ?? "") ?? .pop
+        self.funSoundPack = SoundPack(rawValue: defaults.string(forKey: "funSoundPack") ?? "") ?? .pain
         self.launchAtLogin = defaults.object(forKey: "launchAtLogin") as? Bool ?? false
     }
 }

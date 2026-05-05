@@ -166,24 +166,19 @@ struct MenuBarView: View {
 
     private var funModeSection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("拍击时播放音效")
+            Text("拍击时播放音效（拍越快越激烈）")
                 .font(.caption)
                 .foregroundColor(.secondary)
 
-            HStack {
-                Picker("音效", selection: $engine.settings.funSound) {
-                    ForEach(FunSound.allCases) { sound in
-                        Text(sound.rawValue).tag(sound)
-                    }
+            Picker("音效包", selection: Binding(
+                get: { engine.settings.funSoundPack },
+                set: { engine.switchSoundPack($0) }
+            )) {
+                ForEach(SoundPack.allCases) { pack in
+                    Text(pack.rawValue).tag(pack)
                 }
-                .labelsHidden()
-
-                Button("试听") {
-                    engine.settings.funSound.play()
-                }
-                .font(.caption2)
-                .buttonStyle(.borderless)
             }
+            .pickerStyle(.segmented)
         }
     }
 
