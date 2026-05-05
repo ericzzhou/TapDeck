@@ -49,7 +49,7 @@ class Settings: ObservableObject {
         self.singleTapAction = TapAction(rawValue: defaults.string(forKey: "singleTapAction") ?? "") ?? .toggleMic
         self.doubleTapAction = TapAction(rawValue: defaults.string(forKey: "doubleTapAction") ?? "") ?? .playPause
         self.tripleTapAction = TapAction(rawValue: defaults.string(forKey: "tripleTapAction") ?? "") ?? .screenshot
-        self.sensitivity = defaults.object(forKey: "sensitivity") as? Double ?? 0.05
+        self.sensitivity = defaults.object(forKey: "sensitivity") as? Double ?? 0.02
         self.soundEnabled = defaults.object(forKey: "soundEnabled") as? Bool ?? true
         self.funModeEnabled = defaults.object(forKey: "funModeEnabled") as? Bool ?? true
         self.funSoundPack = SoundPack(rawValue: defaults.string(forKey: "funSoundPack") ?? "") ?? .pain

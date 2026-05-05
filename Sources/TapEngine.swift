@@ -223,6 +223,14 @@ class TapEngine: ObservableObject {
         lastTapTime = now
         tapCount += 1
 
+        // 娱乐模式：每次拍击立即触发音效
+        if settings.funModeEnabled {
+            if settings.soundEnabled { SoundFeedback.play() }
+            soundPackPlayer.play()
+            return
+        }
+
+        // 手势模式：连击检测
         pendingTaps += 1
         multiTapTimer?.invalidate()
         multiTapTimer = Timer.scheduledTimer(withTimeInterval: multiTapWindow, repeats: false) { [weak self] _ in
@@ -274,9 +282,11 @@ func debugLog(_ message: String) {
 struct TapDetector {
     private var shortTermAvg: Double = 0
     private var longTermAvg: Double = 0
-    private let shortAlpha: Double = 0.3
-    private let longAlpha: Double = 0.01
-    private let staLtaRatio: Double = 3.0
+    private let shortAlpha: Double = 0.4
+    private let longAlpha: Double = 0.005
+    private let staLtaRatio: Double = 2.5
+    private var refractoryCount: Int = 0
+    private let refractoryPeriod: Int = 80  // 触发后 80 样本不再触发（~100ms@800Hz）
 
     mutating func process(amplitude: Double, threshold: Double) -> Bool {
         shortTermAvg = shortAlpha * amplitude + (1 - shortAlpha) * shortTermAvg
@@ -287,7 +297,19 @@ struct TapDetector {
             return false
         }
 
+        if refractoryCount > 0 {
+            refractoryCount -= 1
+            return false
+        }
+
         let ratio = shortTermAvg / longTermAvg
-        return ratio > staLtaRatio && amplitude > threshold
+        let triggered = ratio > staLtaRatio && amplitude > threshold
+
+        if triggered {
+            shortTermAvg = longTermAvg
+            refractoryCount = refractoryPeriod
+        }
+
+        return triggered
     }
 }
